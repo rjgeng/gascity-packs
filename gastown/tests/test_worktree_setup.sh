@@ -26,6 +26,8 @@ git -C "$REPO" commit -qm initial
 sh "$SCRIPT" "$REPO" "$WT" worker
 mkdir -p "$WT/.gc"
 printf '{}\n' > "$WT/.gc/runtime.json"
+mkdir -p "$WT/.pi/extensions"
+printf '// managed Pi hook\n' > "$WT/.pi/extensions/gc-hooks.js"
 
 status=$(git -C "$WT" status --porcelain)
 [[ -z "$status" ]] || fail "runtime artifacts dirty the worktree: $status"
@@ -37,6 +39,7 @@ case "$EXCLUDE" in
     *) EXCLUDE="$WT/$EXCLUDE" ;;
 esac
 [[ $(grep -cxF '.gc/' "$EXCLUDE") -eq 1 ]] || fail "missing local .gc/ exclude"
+[[ $(grep -cxF '.pi/extensions/gc-hooks.js' "$EXCLUDE") -eq 1 ]] || fail "missing local Pi hook exclude"
 cp "$EXCLUDE" "$TEST_ROOT/exclude-before"
 
 sh "$SCRIPT" "$REPO" "$WT" worker
